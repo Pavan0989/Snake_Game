@@ -3,6 +3,7 @@ const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreElement = document.getElementById('score');
 const highScoreElement = document.getElementById('highScore');
+const speedLevelElement = document.getElementById('speedLevel');
 const restartBtn = document.getElementById('restartBtn');
 const pauseBtn = document.getElementById('pauseBtn');
 const controlBtns = document.querySelectorAll('.control-btn');
@@ -352,8 +353,11 @@ class PowerUpManager {
         };
     }
 
-    getGameSpeed() {
-        return this.activePowerUps.slowMotion.active ? 200 : 100;
+    getGameSpeed(baseSpeed) {
+        if (this.activePowerUps.slowMotion.active) {
+            return baseSpeed * 2; // Slow motion doubles the base speed (makes it slower)
+        }
+        return baseSpeed;
     }
 
     hasWallImmunity() {
@@ -496,6 +500,20 @@ class Game {
         this.main();
     }
 
+    calculateBaseSpeed() {
+        // Start at 200ms (slow), gradually decrease to 80ms (fast) based on score
+        const baseSpeed = 200;
+        const minSpeed = 80;
+        const speedReduction = Math.floor(this.scoreManager.score / 50) * 10; // Reduce 10ms every 50 points
+        const currentSpeed = Math.max(minSpeed, baseSpeed - speedReduction);
+        
+        // Calculate speed level (1-12) for display
+        const speedLevel = Math.floor((baseSpeed - currentSpeed) / 10) + 1;
+        speedLevelElement.textContent = speedLevel;
+        
+        return currentSpeed;
+    }
+
     main() {
         if (this.isGameOver) {
             this.drawGameOver();
@@ -511,8 +529,9 @@ class Game {
         // Update power-ups
         this.powerUpManager.update();
         
-        // Set game speed based on power-ups
-        const gameSpeed = this.powerUpManager.getGameSpeed();
+        // Calculate base speed based on score, then apply power-up effects
+        const baseSpeed = this.calculateBaseSpeed();
+        const gameSpeed = this.powerUpManager.getGameSpeed(baseSpeed);
         
         this.gameLoop = setTimeout(() => {
             this.clearCanvas();

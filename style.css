@@ -88,7 +88,7 @@ h1 {
     gap: 20px;
 }
 
-.score-container, .high-score-container {
+.score-container, .high-score-container, .speed-container {
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 15px;
@@ -98,7 +98,7 @@ h1 {
     transition: all 0.3s ease;
 }
 
-.score-container:hover, .high-score-container:hover {
+.score-container:hover, .high-score-container:hover, .speed-container:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
@@ -111,7 +111,7 @@ h1 {
     font-weight: 300;
 }
 
-#score, #highScore {
+#score, #highScore, #speedLevel {
     font-family: 'Orbitron', monospace;
     font-size: 1.8rem;
     font-weight: 700;
@@ -120,6 +120,10 @@ h1 {
 
 #highScore {
     color: #ffd700;
+}
+
+#speedLevel {
+    color: #ff6b6b;
 }
 
 /* Canvas */
@@ -278,6 +282,10 @@ h1 {
     .stats-container {
         flex-direction: column;
         gap: 10px;
+    }
+    
+    .score-container, .high-score-container, .speed-container {
+        flex: none;
     }
     
     #gameCanvas {

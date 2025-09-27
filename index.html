@@ -9,7 +9,27 @@
 <body>
     <div class="game-container">
         <h1>🐍 Snake Game</h1>
-        <div class="stats-container">
+        
+        <!-- Difficulty Selection -->
+        <div class="difficulty-selection" id="difficultySelection">
+            <h2>Choose Difficulty</h2>
+            <div class="difficulty-buttons">
+                <button class="difficulty-btn easy" data-difficulty="easy">
+                    <span class="difficulty-icon">🟢</span>
+                    <span class="difficulty-name">Easy</span>
+                </button>
+                <button class="difficulty-btn medium" data-difficulty="medium">
+                    <span class="difficulty-icon">🟡</span>
+                    <span class="difficulty-name">Medium</span>
+                </button>
+                <button class="difficulty-btn hard" data-difficulty="hard">
+                    <span class="difficulty-icon">🔴</span>
+                    <span class="difficulty-name">Hard</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="stats-container" id="statsContainer" style="display: none;">
             <div class="score-container">
                 <span class="label">Score:</span>
                 <span id="score">0</span>
@@ -18,9 +38,9 @@
                 <span class="label">High Score:</span>
                 <span id="highScore">0</span>
             </div>
-            <div class="speed-container">
-                <span class="label">Speed:</span>
-                <span id="speedLevel">1</span>
+            <div class="difficulty-display">
+                <span class="label">Mode:</span>
+                <span id="currentDifficulty">Easy</span>
             </div>
         </div>
         <canvas id="gameCanvas" width="400" height="400"></canvas>

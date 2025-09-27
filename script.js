@@ -1,12 +1,6 @@
 // Get the canvas element and its 2D rendering context
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
-const scoreElement = document.getElementById('score');
-const highScoreElement = document.getElementById('highScore');
-const speedLevelElement = document.getElementById('speedLevel');
-const restartBtn = document.getElementById('restartBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const controlBtns = document.querySelectorAll('.control-btn');
 
 // Define the size of each grid square
 const gridSize = 20;
@@ -173,19 +167,20 @@ class Food {
         this.type = 'normal';
     }
 
-    generate(snakeBody, powerUps) {
+    generate(snakeBody, powerUps, obstacles = []) {
         this.x = Math.floor(Math.random() * tileCount);
         this.y = Math.floor(Math.random() * tileCount);
         this.type = Math.random() < 0.2 ? 'double' : 'normal'; // 20% chance for double points
         
-        // Make sure food doesn't spawn on snake or power-ups
+        // Make sure food doesn't spawn on snake, power-ups, or obstacles
         const isValidPosition = (x, y) => {
             return !snakeBody.some(part => part.x === x && part.y === y) &&
-                   !powerUps.some(powerUp => powerUp.x === x && powerUp.y === y);
+                   !powerUps.some(powerUp => powerUp.x === x && powerUp.y === y) &&
+                   !obstacles.some(obstacle => obstacle.x === x && obstacle.y === y);
         };
         
         if (!isValidPosition(this.x, this.y)) {
-            this.generate(snakeBody, powerUps);
+            this.generate(snakeBody, powerUps, obstacles);
         }
     }
 
@@ -234,7 +229,7 @@ class PowerUp {
         this.type = type;
     }
 
-    static generate(snakeBody, food, existingPowerUps) {
+    static generate(snakeBody, food, existingPowerUps, obstacles = []) {
         const types = ['slowMotion', 'wallImmunity'];
         const type = types[Math.floor(Math.random() * types.length)];
         
@@ -244,11 +239,12 @@ class PowerUp {
             type
         );
         
-        // Make sure power-up doesn't spawn on snake, food, or other power-ups
+        // Make sure power-up doesn't spawn on snake, food, other power-ups, or obstacles
         const isValidPosition = (x, y) => {
             return !snakeBody.some(part => part.x === x && part.y === y) &&
                    !(food.x === x && food.y === y) &&
-                   !existingPowerUps.some(pu => pu.x === x && pu.y === y);
+                   !existingPowerUps.some(pu => pu.x === x && pu.y === y) &&
+                   !obstacles.some(obstacle => obstacle.x === x && obstacle.y === y);
         };
         
         if (isValidPosition(powerUp.x, powerUp.y)) {
@@ -285,6 +281,76 @@ class PowerUp {
     }
 
     isCollected(snakeHead) {
+        return snakeHead.x === this.x && snakeHead.y === this.y;
+    }
+}
+
+// Obstacle Class
+class Obstacle {
+    constructor(x, y) {
+        this.x = x;
+        this.y = y;
+    }
+
+    static generateObstacles(difficulty, snakeBody, food, powerUps) {
+        const obstacles = [];
+        let obstacleCount = 0;
+        
+        switch (difficulty) {
+            case 'easy':
+                obstacleCount = 0; // No obstacles
+                break;
+            case 'medium':
+                obstacleCount = 8; // Some obstacles
+                break;
+            case 'hard':
+                obstacleCount = 15; // Many obstacles
+                break;
+        }
+        
+        for (let i = 0; i < obstacleCount; i++) {
+            const obstacle = new Obstacle(
+                Math.floor(Math.random() * tileCount),
+                Math.floor(Math.random() * tileCount)
+            );
+            
+            // Make sure obstacle doesn't spawn on snake, food, power-ups, or other obstacles
+            const isValidPosition = (x, y) => {
+                return !snakeBody.some(part => part.x === x && part.y === y) &&
+                       !(food.x === x && food.y === y) &&
+                       !powerUps.some(pu => pu.x === x && pu.y === y) &&
+                       !obstacles.some(obs => obs.x === x && obs.y === y);
+            };
+            
+            if (isValidPosition(obstacle.x, obstacle.y)) {
+                obstacles.push(obstacle);
+            }
+        }
+        
+        return obstacles;
+    }
+
+    draw() {
+        // Create gradient for obstacle
+        const gradient = ctx.createRadialGradient(
+            this.x * gridSize + gridSize/2, this.y * gridSize + gridSize/2, 0,
+            this.x * gridSize + gridSize/2, this.y * gridSize + gridSize/2, gridSize/2
+        );
+        gradient.addColorStop(0, '#8b4513');
+        gradient.addColorStop(1, '#654321');
+        
+        ctx.fillStyle = gradient;
+        ctx.beginPath();
+        ctx.roundRect(this.x * gridSize + 1, this.y * gridSize + 1, gridSize - 2, gridSize - 2, 3);
+        ctx.fill();
+        
+        // Add border effect
+        ctx.strokeStyle = '#2c1810';
+        ctx.lineWidth = 2;
+        ctx.stroke();
+    }
+
+    checkCollision(snakeHead) {
         return snakeHead.x === this.x && snakeHead.y === this.y;
     }
 }
@@ -336,9 +402,9 @@ class PowerUpManager {
         return false;
     }
 
-    maybeSpawn(snakeBody, food) {
+    maybeSpawn(snakeBody, food, obstacles = []) {
         if (Math.random() < 0.1 && this.powerUps.length < 2) { // 10% chance, max 2 power-ups
-            const newPowerUp = PowerUp.generate(snakeBody, food, this.powerUps);
+            const newPowerUp = PowerUp.generate(snakeBody, food, this.powerUps, obstacles);
             if (newPowerUp) {
                 this.powerUps.push(newPowerUp);
             }
@@ -367,19 +433,22 @@ class PowerUpManager {
 
 // Score Manager Class
 class ScoreManager {
-    constructor() {
+    constructor(scoreElement, highScoreElement) {
         this.score = 0;
+        this.difficulty = 'easy';
+        this.scoreElement = scoreElement;
+        this.highScoreElement = highScoreElement;
         this.highScore = this.getHighScore();
     }
 
     getHighScore() {
-        return parseInt(localStorage.getItem('snakeHighScore') || '0');
+        return parseInt(localStorage.getItem(`snakeHighScore_${this.difficulty}`) || '0');
     }
 
     setHighScore(newScore) {
-        localStorage.setItem('snakeHighScore', newScore.toString());
+        localStorage.setItem(`snakeHighScore_${this.difficulty}`, newScore.toString());
         this.highScore = newScore;
-        highScoreElement.textContent = newScore;
+        this.highScoreElement.textContent = newScore;
     }
 
     updateHighScore() {
@@ -390,49 +459,106 @@ class ScoreManager {
 
     addPoints(points) {
         this.score += points;
-        scoreElement.textContent = this.score;
+        this.scoreElement.textContent = this.score;
         this.updateHighScore();
     }
 
     reset() {
         this.score = 0;
-        scoreElement.textContent = this.score;
+        this.scoreElement.textContent = this.score;
+    }
+
+    setDifficulty(difficulty) {
+        this.difficulty = difficulty;
+        this.highScore = this.getHighScore();
+        this.highScoreElement.textContent = this.highScore;
     }
 }
 
 // Game Class
 class Game {
-    constructor() {
+    constructor(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns) {
+        this.scoreElement = scoreElement;
+        this.highScoreElement = highScoreElement;
+        this.currentDifficultyElement = currentDifficultyElement;
+        this.difficultySelection = difficultySelection;
+        this.statsContainer = statsContainer;
+        this.restartBtn = restartBtn;
+        this.pauseBtn = pauseBtn;
+        this.controlBtns = controlBtns;
+        this.difficultyBtns = difficultyBtns;
+        
         this.snake = new Snake();
         this.food = new Food();
         this.powerUpManager = new PowerUpManager();
-        this.scoreManager = new ScoreManager();
+        this.scoreManager = new ScoreManager(this.scoreElement, this.highScoreElement);
         this.audioManager = new AudioManager();
+        this.obstacles = [];
+        this.difficulty = 'easy';
         
         this.isGameOver = false;
         this.isPaused = false;
         this.gameLoop = null;
+        this.gameStarted = false;
         
         this.init();
     }
 
     init() {
-        highScoreElement.textContent = this.scoreManager.highScore;
-        this.food.generate(this.snake.body, this.powerUpManager.powerUps);
         this.setupEventListeners();
+        this.showDifficultySelection();
+    }
+
+    showDifficultySelection() {
+        this.difficultySelection.style.display = 'block';
+        this.statsContainer.style.display = 'none';
+        canvas.style.display = 'none';
+        document.querySelector('.controls').style.display = 'none';
+    }
+
+    hideDifficultySelection() {
+        this.difficultySelection.style.display = 'none';
+        this.statsContainer.style.display = 'flex';
+        canvas.style.display = 'block';
+        document.querySelector('.controls').style.display = 'block';
+    }
+
+    startGame(difficulty) {
+        console.log('Starting game with difficulty:', difficulty);
+        this.difficulty = difficulty;
+        this.scoreManager.setDifficulty(difficulty);
+        this.currentDifficultyElement.textContent = difficulty.charAt(0).toUpperCase() + difficulty.slice(1);
+        
+        this.hideDifficultySelection();
+        this.reset();
         this.start();
     }
 
     setupEventListeners() {
+        console.log('Setting up event listeners...');
+        console.log('Difficulty buttons found:', this.difficultyBtns.length);
+        console.log('Difficulty buttons:', this.difficultyBtns);
+        
         // Keyboard controls
         document.addEventListener('keydown', (event) => this.handleKeyPress(event));
         
         // Button controls
-        restartBtn.addEventListener('click', () => this.restart());
-        pauseBtn.addEventListener('click', () => this.togglePause());
+        this.restartBtn.addEventListener('click', () => this.restart());
+        this.pauseBtn.addEventListener('click', () => this.togglePause());
+        
+        // Difficulty selection
+        this.difficultyBtns.forEach((btn, index) => {
+            console.log(`Setting up button ${index}:`, btn);
+            btn.addEventListener('click', (e) => {
+                console.log('Difficulty button clicked:', e.target);
+                const difficulty = e.target.closest('.difficulty-btn').getAttribute('data-difficulty');
+                console.log('Selected difficulty:', difficulty);
+                this.startGame(difficulty);
+            });
+        });
         
         // Mobile controls
-        controlBtns.forEach(btn => {
+        this.controlBtns.forEach(btn => {
             btn.addEventListener('click', (e) => {
                 const direction = e.target.getAttribute('data-direction');
                 this.handleMobileDirection(direction);
@@ -447,14 +573,14 @@ class Game {
     }
 
     handleKeyPress(event) {
-        const LEFT_KEY = 37;
-        const RIGHT_KEY = 39;
-        const UP_KEY = 38;
-        const DOWN_KEY = 40;
+    const LEFT_KEY = 37;
+    const RIGHT_KEY = 39;
+    const UP_KEY = 38;
+    const DOWN_KEY = 40;
         const SPACE_KEY = 32;
         const P_KEY = 80;
 
-        const keyPressed = event.keyCode;
+    const keyPressed = event.keyCode;
         
         // Handle pause/resume with P key or space when game is over
         if (keyPressed === P_KEY || (keyPressed === SPACE_KEY && this.isGameOver)) {
@@ -501,17 +627,31 @@ class Game {
     }
 
     calculateBaseSpeed() {
-        // Start at 200ms (slow), gradually decrease to 80ms (fast) based on score
-        const baseSpeed = 200;
-        const minSpeed = 80;
-        const speedReduction = Math.floor(this.scoreManager.score / 50) * 10; // Reduce 10ms every 50 points
-        const currentSpeed = Math.max(minSpeed, baseSpeed - speedReduction);
+        let baseSpeed, minSpeed, speedReduction;
         
-        // Calculate speed level (1-12) for display
-        const speedLevel = Math.floor((baseSpeed - currentSpeed) / 10) + 1;
-        speedLevelElement.textContent = speedLevel;
+        switch (this.difficulty) {
+            case 'easy':
+                baseSpeed = 250; // Slowest
+                minSpeed = 120;
+                speedReduction = Math.floor(this.scoreManager.score / 50) * 8; // Slower progression
+                break;
+            case 'medium':
+                baseSpeed = 180; // Medium
+                minSpeed = 80;
+                speedReduction = Math.floor(this.scoreManager.score / 40) * 10; // Medium progression
+                break;
+            case 'hard':
+                baseSpeed = 120; // Fastest
+                minSpeed = 50;
+                speedReduction = Math.floor(this.scoreManager.score / 30) * 12; // Fastest progression
+                break;
+            default:
+                baseSpeed = 200;
+                minSpeed = 80;
+                speedReduction = Math.floor(this.scoreManager.score / 50) * 10;
+        }
         
-        return currentSpeed;
+        return Math.max(minSpeed, baseSpeed - speedReduction);
     }
 
     main() {
@@ -537,6 +677,7 @@ class Game {
             this.clearCanvas();
             this.food.draw();
             this.powerUpManager.draw();
+            this.drawObstacles();
             this.moveSnake();
             this.snake.draw();
             this.main();
@@ -551,8 +692,8 @@ class Game {
             const points = this.food.getPoints();
             this.scoreManager.addPoints(points);
             this.audioManager.play('eat');
-            this.food.generate(this.snake.body, this.powerUpManager.powerUps);
-            this.powerUpManager.maybeSpawn(this.snake.body, this.food);
+            this.food.generate(this.snake.body, this.powerUpManager.powerUps, this.obstacles);
+            this.powerUpManager.maybeSpawn(this.snake.body, this.food, this.obstacles);
         } else {
             this.snake.shrink();
         }
@@ -565,9 +706,19 @@ class Game {
         this.checkCollision();
     }
 
+    drawObstacles() {
+        this.obstacles.forEach(obstacle => obstacle.draw());
+    }
+
     checkCollision() {
         // Check for self-collision
         if (this.snake.checkSelfCollision()) {
+            this.gameOver();
+            return;
+        }
+
+        // Check for obstacle collision
+        if (this.obstacles.some(obstacle => obstacle.checkCollision(this.snake.body[0]))) {
             this.gameOver();
             return;
         }
@@ -602,12 +753,22 @@ class Game {
         }
     }
 
-    restart() {
+    reset() {
         // Reset game state
         this.snake.reset();
-        this.food.generate(this.snake.body, this.powerUpManager.powerUps);
         this.powerUpManager.reset();
         this.scoreManager.reset();
+        
+        // Generate obstacles for current difficulty
+        this.obstacles = Obstacle.generateObstacles(
+            this.difficulty, 
+            this.snake.body, 
+            this.food, 
+            this.powerUpManager.powerUps
+        );
+        
+        // Generate food considering obstacles
+        this.food.generate(this.snake.body, this.powerUpManager.powerUps, this.obstacles);
         
         this.isGameOver = false;
         this.isPaused = false;
@@ -616,6 +777,10 @@ class Game {
         if (this.gameLoop) {
             clearTimeout(this.gameLoop);
         }
+    }
+
+    restart() {
+        this.reset();
         
         // Play restart sound
         this.audioManager.play('restart');
@@ -680,5 +845,22 @@ class Game {
     }
 }
 
-// Initialize the game
-const game = new Game();
+// Initialize the game when DOM is ready
+document.addEventListener('DOMContentLoaded', () => {
+    // Get elements after DOM is loaded
+    const scoreElement = document.getElementById('score');
+    const highScoreElement = document.getElementById('highScore');
+    const currentDifficultyElement = document.getElementById('currentDifficulty');
+    const difficultySelection = document.getElementById('difficultySelection');
+    const statsContainer = document.getElementById('statsContainer');
+    const restartBtn = document.getElementById('restartBtn');
+    const pauseBtn = document.getElementById('pauseBtn');
+    const controlBtns = document.querySelectorAll('.control-btn');
+    const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+    
+    console.log('DOM loaded, elements found:');
+    console.log('Score element:', scoreElement);
+    console.log('Difficulty buttons:', difficultyBtns.length);
+    
+    const game = new Game(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns);
+});

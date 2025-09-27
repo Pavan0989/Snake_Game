@@ -477,7 +477,7 @@ class ScoreManager {
 
 // Game Class
 class Game {
-    constructor(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns) {
+    constructor(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns, backBtn) {
         this.scoreElement = scoreElement;
         this.highScoreElement = highScoreElement;
         this.currentDifficultyElement = currentDifficultyElement;
@@ -487,6 +487,7 @@ class Game {
         this.pauseBtn = pauseBtn;
         this.controlBtns = controlBtns;
         this.difficultyBtns = difficultyBtns;
+        this.backBtn = backBtn;
         
         this.snake = new Snake();
         this.food = new Food();
@@ -514,6 +515,7 @@ class Game {
         this.statsContainer.style.display = 'none';
         canvas.style.display = 'none';
         document.querySelector('.controls').style.display = 'none';
+        if (this.backBtn) this.backBtn.style.display = 'none';
     }
 
     hideDifficultySelection() {
@@ -521,6 +523,7 @@ class Game {
         this.statsContainer.style.display = 'flex';
         canvas.style.display = 'block';
         document.querySelector('.controls').style.display = 'block';
+        if (this.backBtn) this.backBtn.style.display = 'flex';
     }
 
     startGame(difficulty) {
@@ -556,6 +559,13 @@ class Game {
                 this.startGame(difficulty);
             });
         });
+        
+        // Back button
+        if (this.backBtn) {
+            this.backBtn.addEventListener('click', () => {
+                this.showDifficultySelection();
+            });
+        }
         
         // Mobile controls
         this.controlBtns.forEach(btn => {
@@ -857,10 +867,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const pauseBtn = document.getElementById('pauseBtn');
     const controlBtns = document.querySelectorAll('.control-btn');
     const difficultyBtns = document.querySelectorAll('.difficulty-btn');
+    const backBtn = document.getElementById('backBtn');
     
     console.log('DOM loaded, elements found:');
     console.log('Score element:', scoreElement);
     console.log('Difficulty buttons:', difficultyBtns.length);
     
-    const game = new Game(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns);
+    const game = new Game(scoreElement, highScoreElement, currentDifficultyElement, difficultySelection, statsContainer, restartBtn, pauseBtn, controlBtns, difficultyBtns, backBtn);
 });

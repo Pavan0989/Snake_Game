@@ -53,6 +53,8 @@ body::before {
         inset 0 1px 0 rgba(255, 255, 255, 0.2);
     text-align: center;
     animation: containerFloat 6s ease-in-out infinite;
+    position: relative; /* THIS IS IMPORTANT FOR POSITIONING THE BUTTON */
+    background: rgba(255, 255, 255, 0.1);
 }
 
 @keyframes containerFloat {
@@ -170,7 +172,28 @@ h1 {
     backdrop-filter: blur(10px);
     transition: all 0.3s ease;
 }
+.back-btn {
+    position: static;
+    margin: 0 10px 20px 10px;
+    background: linear-gradient(45deg, #4ecdc4, #45b7d1);
+    border: none;
+    color: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 1.5rem;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
 
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: scale(1.1);
+}
 .score-container:hover, .high-score-container:hover, .difficulty-display:hover {
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);

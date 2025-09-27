@@ -10,7 +10,6 @@ A feature-rich and modern take on the classic Snake game, built from scratch wit
 
 ![Snake Game Screenshot](https://raw.githubusercontent.com/Pavan0989/Snake_Game/main/snake-game-screenshot.png)
 
-*(**Suggestion:** Replace the screenshot above with an animated GIF of your gameplay. Tools like [ScreenToGif](https://www.screentogif.com/) or [LICEcap](https://www.cockos.com/licecap/) make this easy!)*
 
 ---
 

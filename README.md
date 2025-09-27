@@ -4,7 +4,7 @@ A feature-rich and modern take on the classic Snake game, built from scratch wit
 
 ## 🕹️ Live Demo
 
-**(Link to your live game here - See instructions below on how to create one easily!)**
+(https://pavan0989.github.io/Snake_Game/)
 
 ## 📸 Gameplay Screenshot
 

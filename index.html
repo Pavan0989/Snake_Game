@@ -22,9 +22,25 @@
         <canvas id="gameCanvas" width="400" height="400"></canvas>
         <div class="controls">
             <button id="restartBtn" class="restart-btn">🔄 Restart Game</button>
+            <button id="pauseBtn" class="pause-btn">⏸️ Pause</button>
+            
+            <!-- Mobile Controls -->
+            <div class="mobile-controls">
+                <div class="control-row">
+                    <button class="control-btn" data-direction="up">↑</button>
+                </div>
+                <div class="control-row">
+                    <button class="control-btn" data-direction="left">←</button>
+                    <button class="control-btn" data-direction="down">↓</button>
+                    <button class="control-btn" data-direction="right">→</button>
+                </div>
+            </div>
+            
             <div class="instructions">
-                <p>Use arrow keys to control the snake</p>
-                <p>Press SPACE to restart when game over</p>
+                <p><strong>Desktop:</strong> Use arrow keys to control the snake</p>
+                <p><strong>Mobile:</strong> Use the directional buttons below</p>
+                <p><strong>Controls:</strong> P or SPACE to pause/resume</p>
+                <p><strong>Restart:</strong> SPACE when game over or click Restart</p>
             </div>
         </div>
     </div>

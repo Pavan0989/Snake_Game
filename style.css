@@ -146,7 +146,7 @@ h1 {
     margin-top: 20px;
 }
 
-.restart-btn {
+.restart-btn, .pause-btn {
     background: linear-gradient(45deg, #ff6b6b, #ee5a24);
     border: none;
     color: white;
@@ -158,20 +158,94 @@ h1 {
     cursor: pointer;
     transition: all 0.3s ease;
     box-shadow: 0 5px 15px rgba(238, 90, 36, 0.4);
-    margin-bottom: 20px;
+    margin: 0 10px 20px 10px;
     text-transform: uppercase;
     letter-spacing: 1px;
 }
 
-.restart-btn:hover {
+.pause-btn {
+    background: linear-gradient(45deg, #4ecdc4, #44a08d);
+    box-shadow: 0 5px 15px rgba(78, 205, 196, 0.4);
+}
+
+.restart-btn:hover, .pause-btn:hover {
     transform: translateY(-3px);
     box-shadow: 0 8px 25px rgba(238, 90, 36, 0.6);
+}
+
+.pause-btn:hover {
+    box-shadow: 0 8px 25px rgba(78, 205, 196, 0.6);
+    background: linear-gradient(45deg, #44a08d, #4ecdc4);
+}
+
+.restart-btn:hover {
     background: linear-gradient(45deg, #ee5a24, #ff6b6b);
 }
 
-.restart-btn:active {
+.restart-btn:active, .pause-btn:active {
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(238, 90, 36, 0.5);
+}
+
+.pause-btn:active {
+    box-shadow: 0 4px 15px rgba(78, 205, 196, 0.5);
+}
+
+/* Mobile Controls */
+.mobile-controls {
+    margin: 20px 0;
+    display: none; /* Hidden by default, shown on mobile */
+}
+
+.control-row {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin: 5px 0;
+}
+
+.control-btn {
+    background: rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    font-size: 1.5rem;
+    font-weight: bold;
+    width: 60px;
+    height: 60px;
+    border-radius: 15px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    backdrop-filter: blur(10px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    user-select: none;
+    -webkit-user-select: none;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.control-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.5);
+    transform: scale(1.05);
+}
+
+.control-btn:active {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(0.95);
+}
+
+/* Show mobile controls on mobile devices */
+@media (max-width: 768px) {
+    .mobile-controls {
+        display: block;
+    }
+    
+    .control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.2rem;
+    }
 }
 
 /* Instructions */
